@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Partner Form - Produk Detail</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f5f5f5;
+padding:20px;
+}
+
+.box{
+background:#fff;
+padding:20px;
+max-width:600px;
+margin:auto;
+border-radius:10px;
+box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+input,textarea,select,button{
+width:100%;
+padding:10px;
+margin:6px 0;
+border:1px solid #ddd;
+border-radius:6px;
+box-sizing:border-box;
+}
+
+textarea{
+resize:none;
+height:80px;
+}
+
+button{
+background:#28a745;
+color:#fff;
+border:none;
+cursor:pointer;
+font-weight:bold;
+}
+
+.preview img,.preview video{
+width:100%;
+margin-top:10px;
+border-radius:8px;
+}
+
+h2{margin-bottom:10px}
+
+label{
+display:block;
+margin-top:10px;
+font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+<h2>AJUKAN KERJA SAMA PRODUK</h2>
+
+<!-- DATA PERUSAHAAN -->
+<input id="nama" placeholder="Nama Perusahaan">
+<input id="pic" placeholder="PIC (Nama Penanggung Jawab)">
+<input id="wa" placeholder="WhatsApp">
+
+<!-- PRODUK DETAIL -->
+<input id="namaProduk" placeholder="Nama Produk">
+
+<select id="kategori">
+<option value="">Pilih Kategori Produk</option>
+<option>Elektronik</option>
+<option>Fashion</option>
+<option>Otomotif</option>
+<option>Makanan</option>
+<option>Furniture</option>
+<option>Lainnya</option>
+</select>
+
+<textarea id="deskripsi" placeholder="Deskripsi Produk"></textarea>
+
+<input id="harga" type="number" placeholder="Harga Produk">
+<input id="stok" type="number" placeholder="Stok Produk">
+
+<input id="min" type="number" placeholder="Minimal Pembelian">
+<input id="berat" type="number" placeholder="Berat (Kg)">
+<input id="volume" placeholder="Volume (contoh: 30x20x10 cm)">
+
+<input id="fee" type="number" placeholder="Fee Kerja Sama (%)">
+
+<!-- MEDIA -->
+<label>Foto Produk</label>
+<input type="file" id="foto" accept="image/*">
+
+<label>Video Produk</label>
+<input type="file" id="video" accept="video/*">
+
+<button onclick="kirim()">KIRIM DATA</button>
+
+<div class="preview" id="preview"></div>
+</div>
+
+<script>
+let data = JSON.parse(localStorage.getItem("partners")) || [];
+let fotoData = "";
+let videoData = "";
+
+const preview = document.getElementById("preview");
+
+function toBase64(file, cb){
+  let r = new FileReader();
+  r.onload = e => cb(e.target.result);
+  r.onerror = () => {
+    alert("Gagal membaca file");
+    cb(null);
+  };
+  r.readAsDataURL(file);
+}
+
+/* FOTO */
+document.getElementById("foto").onchange = e=>{
+  if(e.target.files[0]){
+    toBase64(e.target.files[0], res=>{
+      if(res){
+        fotoData = res;
+        preview.innerHTML = `
+          <h4>Preview Produk</h4>
+          <img src="${res}">
+        `;
+      }
+    });
+  }
+}
+
+/* VIDEO */
+document.getElementById("video").onchange = e=>{
+  if(e.target.files[0]){
+    toBase64(e.target.files[0], res=>{
+      if(res){
+        videoData = res;
+        preview.innerHTML += `
+          <video src="${res}" controls></video>
+        `;
+      }
+    });
+  }
+}
+
+/* KIRIM */
+function kirim(){
+
+  let required = [
+    "nama","pic","wa","namaProduk","kategori","harga"
+  ];
+
+  for(let id of required){
+    if(!document.getElementById(id).value){
+      alert("Mohon lengkapi semua data wajib!");
+      return;
+    }
+  }
+
+  let p = {
+    id: Date.now(),
+    perusahaan: document.getElementById("nama").value,
+    pic: document.getElementById("pic").value,
+    wa: document.getElementById("wa").value,
+    produk:{
+      nama: document.getElementById("namaProduk").value,
+      kategori: document.getElementById("kategori").value,
+      deskripsi: document.getElementById("deskripsi").value,
+      harga: document.getElementById("harga").value,
+      stok: document.getElementById("stok").value,
+      minPembelian: document.getElementById("min").value,
+      berat: document.getElementById("berat").value,
+      volume: document.getElementById("volume").value,
+      fee: document.getElementById("fee").value || "0"
+    },
+    media:{
+      foto: fotoData,
+      video: videoData
+    },
+    time: new Date().toLocaleString('id-ID')
+  };
+
+  data.push(p);
+  localStorage.setItem("partners", JSON.stringify(data));
+
+  alert("Data produk berhasil dikirim!");
+  location.reload();
+}
+</script>
+
+</body>
+</html>
